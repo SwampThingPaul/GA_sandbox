@@ -17,6 +17,8 @@
       "RemoteHost": "api.github.com",
       "RemoteRepo": "AnalystHelper",
       "RemoteUsername": "SwampThingPaul",
+      "RemoteRef": "main",
+      "RemoteSha": "b359463", 
       "Requirements": [
         "R",
         "RCurl",
@@ -47,6 +49,8 @@
       "RemoteHost": "api.github.com",
       "RemoteRepo": "EVERSpatDat",
       "RemoteUsername": "SwampThingPaul",
+      "RemoteRef": "main",
+      "RemoteSha": "597ee0d", 
       "Requirements": [
         "R"
       ],
