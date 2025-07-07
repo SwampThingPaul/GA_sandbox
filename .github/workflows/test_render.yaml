@@ -3,7 +3,7 @@ name: Render R Markdown - test
 on:
   push:
   schedule:
-    - cron: '@hourly'
+    - cron: '* 1 * * *'
 
 jobs:
   render:
