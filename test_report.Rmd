@@ -37,15 +37,17 @@ data(LOK)
 ## Including Plots
 
 ```{r pressure, echo=FALSE}
-set.seed(123)
-dat <- rnorm(100)
+# set.seed(123)
+dat <- rnorm(500)
 
 
 plot(dat,ann=F,type="n",axes=F,ylim=c(-3,3))
 points(dat,pch=21,bg="pink",lwd=0.1,col="red",cex=2)
-axis_fun(1,seq(0,100,50),seq(0,100,1),seq(0,100,50))
+axis_fun(1,seq(0,500,100),seq(0,500,10),seq(0,500,100))
 axis_fun(2,seq(-3,3,1),seq(-3,3,0.5),seq(-3,3,1))
 box(lwd=1)
+
+summary(dat)
 ```
 
 
