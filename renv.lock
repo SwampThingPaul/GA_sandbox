@@ -12,7 +12,11 @@
     "AnalystHelper": {
       "Package": "AnalystHelper",
       "Version": "0.1.5",
-      "Source": "unknown",
+      "Source": "Github",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "AnalystHelper",
+      "RemoteUsername": "SwampThingPaul",
       "Requirements": [
         "R",
         "RCurl",
@@ -38,7 +42,11 @@
     "EVERSpatDat": {
       "Package": "EVERSpatDat",
       "Version": "0.1.0",
-      "Source": "unknown",
+      "Source": "Github",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "EVERSpatDat",
+      "RemoteUsername": "SwampThingPaul",
       "Requirements": [
         "R"
       ],
@@ -1285,14 +1293,16 @@
     },
     "xfun": {
       "Package": "xfun",
-      "Version": "0.37",
+      "Version": "0.52",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
+        "R",
+        "grDevices",
         "stats",
         "tools"
       ],
-      "Hash": "a6860e1400a8fd1ddb6d9b4230cc34ab"
+      "Hash": "652ce36fe7d57688e6786819b09d9190"
     },
     "xml2": {
       "Package": "xml2",

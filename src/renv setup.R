@@ -3,6 +3,7 @@
 
 ## libraries
 library(rmarkdown)
+library(knitr)
 
 library(AnalystHelper)
 library(reshape2)
@@ -20,8 +21,9 @@ library(rvest)
 ## renv setup
 ## https://rstudio.github.io/renv/articles/renv.html
 
-#renv::init()
+# renv::init()
 
 renv::snapshot()
 
-#renv::deactivate()
+# renv::deactivate()
+# renv::activate()

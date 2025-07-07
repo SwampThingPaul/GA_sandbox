@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo=FALSE,
                       dev.args = list(png = list(type = "cairo")))
 ```
 
-```{r,}
+```{r}
 ## Data 
 library(AnalystHelper)
 library(reshape2)
@@ -31,6 +31,8 @@ library(rvest)
 
 data(LOK)
 ```
+
+`r paste("Updated:",format(Sys.time(),tz="America/New_York",usetz=T,"%F %R"))`
 
 ## Including Plots
 
