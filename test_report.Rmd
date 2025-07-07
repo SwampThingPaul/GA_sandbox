@@ -1,0 +1,53 @@
+---
+title: "renv test"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE,
+                      message=FALSE,
+                      warning=FALSE,
+                      fig.path="plots/",
+                      dev.args = list(png = list(type = "cairo")))
+```
+
+```{r,}
+## Data 
+library(AnalystHelper)
+library(reshape2)
+library(plyr)
+library(dataRetrieval)
+
+## Spatial
+library(sf)
+library(terra)
+library(EVERSpatDat)
+
+library(downloadthis)
+library(rvest)
+
+
+data(LOK)
+```
+
+## Including Plots
+
+```{r pressure, echo=FALSE}
+set.seed(123)
+dat <- rnorm(100)
+
+
+plot(dat,ann=F,type="n",axes=F,ylim=c(-3,3))
+points(dat,pch=21,bg="pink",lwd=0.1,col="red",cex=2)
+axis_fun(1,seq(0,100,50),seq(0,100,1),seq(0,100,50))
+axis_fun(2,seq(-3,3,1),seq(-3,3,0.5),seq(-3,3,1))
+box(lwd=1)
+```
+
+
+```{r LOK plot}
+plot(st_geometry(LOK),col="lightblue",bg="cornsilk",border="grey")
+box(lwd=1)
+```

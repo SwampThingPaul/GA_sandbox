@@ -1,0 +1,31 @@
+name: Render R Markdown - test
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  render:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
+
+      - name: Install renv and restore packages
+        run: |
+          Rscript -e "install.packages('renv', repos = 'https://cloud.r-project.org')"
+          Rscript -e "renv::restore()"
+
+      - name: Render R Markdown
+        run: |
+          Rscript -e "rmarkdown::render('test_report.Rmd')"
+
+      - name: Upload rendered report
+        uses: actions/upload-artifact@v4
+        with:
+          name: rendered-report
+          path: test_report.html
