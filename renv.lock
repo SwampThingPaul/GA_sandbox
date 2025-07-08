@@ -2242,10 +2242,10 @@
     },
     "nnet": {
       "Package": "nnet",
-      "Version": "7.3-16",
+      "Version": "7.3-18",
       "Source": "Repository",
       "Priority": "recommended",
-      "Date": "2021-04-17",
+      "Date": "2022-09-28",
       "Depends": [
         "R (>= 3.0.0)",
         "stats",
