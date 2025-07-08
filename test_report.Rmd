@@ -6,7 +6,7 @@ editor_options:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo=FALSE,
+knitr::opts_chunk$set(echo=TRUE,
                       message=FALSE,
                       warning=FALSE,
                       fig.path="plots/",
@@ -36,14 +36,17 @@ data(LOK)
 
 ## Including Plots
 
-```{r pressure, echo=FALSE}
+```{r pressure}
 # set.seed(123)
-dat <- rnorm(500)
+n.val <- 500
+dat <- rnorm(n.val)
 
 
 plot(dat,ann=F,type="n",axes=F,ylim=c(-3,3))
 points(dat,pch=21,bg="pink",lwd=0.1,col="red",cex=2)
-axis_fun(1,seq(0,500,100),seq(0,500,10),seq(0,500,100))
+abline(h=mean(dat))
+abline(h=c(mean(dat)+sd(dat),mean(dat)-sd(dat)),lty=2,col="blue")
+axis_fun(1,seq(0,n.val,n.val/5),seq(0,n.val,n.val/50),seq(0,n.val,n.val/5))
 axis_fun(2,seq(-3,3,1),seq(-3,3,0.5),seq(-3,3,1))
 box(lwd=1)
 
@@ -52,6 +55,9 @@ summary(dat)
 
 
 ```{r LOK plot}
+samp.site <- st_sample(LOK,10)
+
 plot(st_geometry(LOK),col="lightblue",bg="cornsilk",border="grey")
+plot(st_geometry(samp.site),add=T,pch=21,bg="lightgreen",col="red",cex=1.5,lwd=0.1)
 box(lwd=1)
 ```

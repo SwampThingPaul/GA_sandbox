@@ -12,13 +12,13 @@
     "AnalystHelper": {
       "Package": "AnalystHelper",
       "Version": "0.1.5",
-      "Source": "Github",
+      "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
+      "RemoteUsername": "SwampthingPaul",
       "RemoteRepo": "AnalystHelper",
-      "RemoteUsername": "SwampThingPaul",
-      "RemoteRef": "main",
-      "RemoteSha": "b359463", 
+      "RemoteRef": "master",
+      "RemoteSha": "b359463af0d71d372d2c82e3d39229b39c4dfd22",
       "Requirements": [
         "R",
         "RCurl",
@@ -28,7 +28,7 @@
         "sf",
         "zoo"
       ],
-      "Hash": "9dca1426c0b7cb8404219463094480b4"
+      "Hash": "940c833839ae8c2857f86cb48472bda1"
     },
     "DBI": {
       "Package": "DBI",
@@ -44,13 +44,13 @@
     "EVERSpatDat": {
       "Package": "EVERSpatDat",
       "Version": "0.1.0",
-      "Source": "Github",
+      "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
-      "RemoteRepo": "EVERSpatDat",
-      "RemoteUsername": "SwampThingPaul",
-      "RemoteRef": "main",
-      "RemoteSha": "597ee0d", 
+      "RemoteUsername": "SwampthingPaul",
+      "RemoteRepo": "AnalystHelper",
+      "RemoteRef": "master",
+      "RemoteSha": "597ee0d",
       "Requirements": [
         "R"
       ],
