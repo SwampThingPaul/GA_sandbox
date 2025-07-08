@@ -1311,10 +1311,10 @@
     },
     "foreign": {
       "Package": "foreign",
-      "Version": "0.8-81",
+      "Version": "0.8-84",
       "Source": "Repository",
       "Priority": "recommended",
-      "Date": "2020-12-22",
+      "Date": "2022-12-06",
       "Title": "Read Data Stored by 'Minitab', 'S', 'SAS', 'SPSS', 'Stata', 'Systat', 'Weka', 'dBase', ...",
       "Depends": [
         "R (>= 4.0.0)"
