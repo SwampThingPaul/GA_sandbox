@@ -58,6 +58,6 @@ summary(dat)
 samp.site <- st_sample(LOK,10)
 
 plot(st_geometry(LOK),col="lightblue",bg="cornsilk",border="grey")
-plot(st_geometry(samp.site),add=T,pch=21,bg="lightgreen",col="red",cex=1.5,lwd=0.1)
+plot(st_geometry(samp.site),add=T,pch=21,bg="lightgreen",col="red",cex=1.5,lwd=0.5)
 box(lwd=1)
 ```

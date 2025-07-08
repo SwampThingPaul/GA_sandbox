@@ -48,13 +48,13 @@
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteUsername": "SwampthingPaul",
-      "RemoteRepo": "AnalystHelper",
+      "RemoteRepo": "EVERSpatDat",
       "RemoteRef": "master",
-      "RemoteSha": "597ee0d",
+      "RemoteSha": "2040a75851bd63313a13358fcaed76d8fc7bd921",
       "Requirements": [
         "R"
       ],
-      "Hash": "dbff1e96d88f82f619cec8bdbb07116d"
+      "Hash": "d3ecfd4ccfdc64118682f9d412e6ac39"
     },
     "KernSmooth": {
       "Package": "KernSmooth",

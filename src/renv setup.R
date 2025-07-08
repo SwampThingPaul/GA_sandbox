@@ -29,3 +29,9 @@ renv::snapshot()
 
 # renv::deactivate()
 # renv::activate()
+
+renv::status()
+
+## to install problematic packages
+# renv::install("SwampthingPaul/EVERSpatDat")
+
