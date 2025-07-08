@@ -3289,11 +3289,11 @@
     },
     "survival": {
       "Package": "survival",
-      "Version": "3.2-11",
+      "Version": "3.5-5",
       "Source": "Repository",
       "Title": "Survival Analysis",
       "Priority": "recommended",
-      "Date": "2021-04-25",
+      "Date": "2023-03-11",
       "Depends": [
         "R (>= 3.5.0)"
       ],
