@@ -25,7 +25,7 @@ library(MASS)
 
 # renv::init()
 
-renv::snapshot(type="packrat")
+# renv::snapshot(type="packrat")
 renv::snapshot()
 
 # renv::deactivate()
@@ -40,3 +40,19 @@ renv::status()
 # renv::install(package = "class", repos = c(CRAN = "https://cran.rstudio.com/"))
 # renv::install(package = "nlme", repos = c(CRAN = "https://cran.rstudio.com/"))
 # renv::install(package = "rpart", repos = c(CRAN = "https://cran.rstudio.com/"))
+# renv::install(package = "wk", repos = c(CRAN = "https://cran.rstudio.com/"))
+
+# renv::install("paleolimbot/wk")
+
+# renv::purge("terra")
+# renv::install(package= 'terra', repos = c("https://cran.rstudio.com/"))
+
+# renv::purge("sf")
+# renv::install(package= 'sf', repos = c("https://cran.rstudio.com/"))
+
+# renv::purge("RCurl")
+# renv::install(package= 'RCurl', repos = c("https://cran.rstudio.com/"),prompt = F,pkgType = "binary",verbose = T )
+
+
+renv::clean()
+renv::rebuild()
