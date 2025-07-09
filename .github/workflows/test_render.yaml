@@ -20,22 +20,9 @@ jobs:
 
       - name: Set up Pandoc
         uses: r-lib/actions/setup-pandoc@v2
-        
-      - name: Install RTools (required for compilation)
-        run: |
-          choco install rtools --version=4.0.0.20230203
-
-      - name: Add RTools to PATH
-        run: |
-          echo "C:\\rtools40\\usr\\bin" >> $GITHUB_PATH
-          echo "C:\\rtools40\\mingw64\\bin" >> $GITHUB_PATH
 
       - name: Set up R package cache
         uses: r-lib/actions/setup-renv@v2
-        
-      - name: Restore renv packages (set download method to libcurl)
-        run: |
-          Rscript -e "Sys.setenv(RENV_DOWNLOAD_METHOD = 'libcurl'); renv::restore()"
 
       - name: Restore R packages with renv
         shell: Rscript {0}
