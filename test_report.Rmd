@@ -30,6 +30,8 @@ library(rvest)
 
 
 data(LOK)
+
+# renv::snapshot(update = TRUE,force = TRUE)
 ```
 
 `r paste("Updated:",format(Sys.time(),tz="America/New_York",usetz=T,"%F %R"))`

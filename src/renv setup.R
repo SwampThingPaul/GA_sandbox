@@ -25,6 +25,7 @@ library(MASS)
 
 # renv::init()
 
+renv::snapshot(type="packrat")
 renv::snapshot()
 
 # renv::deactivate()
