@@ -34,7 +34,8 @@ renv::status()
 
 ## to install problematic packages
 # renv::install("SwampthingPaul/EVERSpatDat")
-
-renv::install(package = "MASS", repos = c(CRAN = "https://cran.rstudio.com/"))
-renv::install(package = "class", repos = c(CRAN = "https://cran.rstudio.com/"))
-renv::install(package = "nlme", repos = c(CRAN = "https://cran.rstudio.com/"))
+# 
+# renv::install(package = "MASS", repos = c(CRAN = "https://cran.rstudio.com/"))
+# renv::install(package = "class", repos = c(CRAN = "https://cran.rstudio.com/"))
+# renv::install(package = "nlme", repos = c(CRAN = "https://cran.rstudio.com/"))
+# renv::install(package = "rpart", repos = c(CRAN = "https://cran.rstudio.com/"))
