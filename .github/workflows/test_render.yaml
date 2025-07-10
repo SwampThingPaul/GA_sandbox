@@ -12,14 +12,14 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-      - name: Set up R
-        uses: r-lib/actions/setup-r@v2
+    - name: Set up R
+      uses: r-lib/actions/setup-r@v2
 
-      - name: Set up Pandoc
-        uses: r-lib/actions/setup-pandoc@v2
+    - name: Set up Pandoc
+      uses: r-lib/actions/setup-pandoc@v2
 
       # - name: Set up R package cache
       #  uses: r-lib/actions/setup-renv@v2
@@ -37,46 +37,46 @@ jobs:
       #   run: |
       #     renv::restore()
       
-      - name: Cache R packages
-        uses: actions/cache@v3
-        with:
-          path: ${{ env.R_LIBS_USER }}
-          key: ${{ runner.os }}-r-${{ hashFiles('DESCRIPTION') }}
-          restore-keys: |
-            ${{ runner.os }}-r-
+    - name: Cache R packages
+      uses: actions/cache@v3
+      with:
+        path: ${{ env.R_LIBS_USER }}
+        key: ${{ runner.os }}-r-${{ hashFiles('DESCRIPTION') }}
+        restore-keys: |
+           ${{ runner.os }}-r-
             
-       - name: Install packages
-         uses: r-lib/actions/setup-r-dependencies@v2
-         with:
-           pak-version: "devel"
-           packages: |
-             rmarkdown
-             knitr
-             reshape2
-             plyr
-             dataRetrieval
-             sf
-             terra
-             downloadthis
-             rvest
-             SwampThingPaul/AnalystHelper
-             SwampThingPaul/EVERSpatDat
+    - name: Install packages
+      uses: r-lib/actions/setup-r-dependencies@v2
+      with:
+        pak-version: "devel"
+        packages: |
+          rmarkdown
+          knitr
+          reshape2
+          plyr
+          dataRetrieval
+          sf
+          terra
+          downloadthis
+          rvest
+          SwampThingPaul/AnalystHelper
+          SwampThingPaul/EVERSpatDat
 
-      - name: Render R Markdown
-        shell: Rscript {0}
-        run: |
-          rmarkdown::render("test_report.Rmd")
+    - name: Render R Markdown
+      shell: Rscript {0}
+      run: |
+        rmarkdown::render("test_report.Rmd")
 
-      - name: Commit rendered report
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add test_report.html
-          git commit -m "Rendered report" || echo "Nothing to commit"
-          git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # RENV_PATHS_ROOT: ~/.cache/R/renv
+    - name: Commit rendered report
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git add test_report.html
+        git commit -m "Rendered report" || echo "Nothing to commit"
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # RENV_PATHS_ROOT: ~/.cache/R/renv
 
 
 # 
