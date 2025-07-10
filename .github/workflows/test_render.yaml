@@ -21,21 +21,46 @@ jobs:
       - name: Set up Pandoc
         uses: r-lib/actions/setup-pandoc@v2
 
-      - name: Set up R package cache
-        uses: r-lib/actions/setup-renv@v2
+      # - name: Set up R package cache
+      #  uses: r-lib/actions/setup-renv@v2
         
-      - name: Cache packages
+      # - name: Cache packages
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: ${{ env.RENV_PATHS_ROOT }}
+      #     key: ${{ runner.os }}-renv-${{ hashFiles('**/renv.lock') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-renv-
+
+      # - name: Restore R packages with renv
+      #   shell: Rscript {0}
+      #   run: |
+      #     renv::restore()
+      
+      - name: Cache R packages
         uses: actions/cache@v3
         with:
-          path: ${{ env.RENV_PATHS_ROOT }}
-          key: ${{ runner.os }}-renv-${{ hashFiles('**/renv.lock') }}
+          path: ${{ env.R_LIBS_USER }}
+          key: ${{ runner.os }}-r-${{ hashFiles('DESCRIPTION') }}
           restore-keys: |
-            ${{ runner.os }}-renv-
-
-      - name: Restore R packages with renv
-        shell: Rscript {0}
-        run: |
-          renv::restore()
+            ${{ runner.os }}-r-
+            
+       - name: Install packages
+         uses: r-lib/actions/setup-r-dependencies@v2
+         with:
+           pak-version: "devel"
+           packages: |
+             rmarkdown
+             knitr
+             reshape2
+             plyr
+             dataRetrieval
+             sf
+             terra
+             downloadthis
+             rvest
+             SwampThingPaul/AnalystHelper
+             SwampThingPaul/EVERSpatDat
 
       - name: Render R Markdown
         shell: Rscript {0}
@@ -51,7 +76,7 @@ jobs:
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RENV_PATHS_ROOT: ~/.cache/R/renv
+          # RENV_PATHS_ROOT: ~/.cache/R/renv
 
 
 # 
