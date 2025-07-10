@@ -53,6 +53,14 @@ jobs:
 
     - name: Render R Markdown
       run: Rscript -e 'rmarkdown::render("./test_report.Rmd", output_format = "html_document")'
+      
+    - name: Check for rendered file
+      run: |
+        ls -l
+          if [ ! -f test_report.html ]; then
+          echo "ERROR: test_report.html was not created!"
+          exit 1
+        fi
 
     - name: Configure Git
       run: |
