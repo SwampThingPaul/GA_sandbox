@@ -50,7 +50,7 @@ jobs:
           SwampThingPaul/EVERSpatDat
 
     - name: Render R Markdown
-      run: Rscript -e 'rmarkdown::render("test_report.Rmd", output_format = "html_document")'
+      run: Rscript -e 'rmarkdown::render("./test_report.Rmd", output_format = "html_document")'
 
     - name: Configure Git
       run: |
