@@ -20,6 +20,8 @@ library(rvest)
 
 # dependancy?
 library(MASS)
+
+
 ## renv setup
 ## https://rstudio.github.io/renv/articles/renv.html
 
@@ -51,8 +53,10 @@ renv::status()
 # renv::install(package= 'sf', repos = c("https://cran.rstudio.com/"))
 
 # renv::purge("RCurl")
-# renv::install(package= 'RCurl', repos = c("https://cran.rstudio.com/"),prompt = F,type = "binary",verbose = T )
+# renv::install(Package= 'RCurl@1.98-1.12')
 
-
+renv::install("https://cran.r-project.org/src/contrib/Archive/RCurl/RCurl_1.98-1.12.tar.gz", type = "binary")
 renv::clean()
-renv::rebuild(type="binary",recursive = TRUE)
+# renv::rebuild(type="binary",recursive = TRUE)
+renv::rebuild()
+
