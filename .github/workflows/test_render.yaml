@@ -12,7 +12,7 @@ jobs:
     runs-on: windows-latest
     env:
       R_LIBS_USER: ${{ github.workspace }}/.Rlibrary
-      # PERSONAL_PAT: ${{ secrets.GH_PAT }}
+      PERSONAL_PAT: ${{ secrets.GH_PAT }}
 
     steps:
     - name: Checkout repository
@@ -61,9 +61,14 @@ jobs:
 
     - name: Commit and push rendered report
       run: |
-        git add -A
+        git remote set-url origin https://x-access-token:${env:PERSONAL_PAT}@github.com/${{ github.repository }}
+        git add test_report.html test_report.Rmd
         git commit -m "update report" || echo "No changes to commit"
         git pull --ff-only
         git push origin || echo "No changes to commit"
 
-# git remote set-url origin https://x-access-token:${env:PERSONAL_PAT}@github.com/${{ github.repository }}
+    - name: List rendered files
+      run: ls -lah
+
+    - name: Show diff
+      run: git status && git diff
