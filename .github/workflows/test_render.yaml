@@ -12,7 +12,7 @@ jobs:
     runs-on: windows-latest
     env:
       R_LIBS_USER: ${{ github.workspace }}/.Rlibrary
-      PERSONAL_PAT: ${{ secrets.GH_PAT }}
+      # PERSONAL_PAT: ${{ secrets.GH_PAT }}
 
     steps:
     - name: Checkout repository
@@ -50,9 +50,9 @@ jobs:
           SwampThingPaul/EVERSpatDat
 
     - name: Render R Markdown
-      shell: Rscript {0}
       run: |
         rmarkdown::render("test_report.Rmd", output_format = "html_document")
+      shell: Rscript {0}
     
     - name: Configure Git
       run: |
