@@ -50,9 +50,13 @@ jobs:
           SwampThingPaul/EVERSpatDat
 
     - name: Render R Markdown
-      run: |
-        rmarkdown::render("test_report.Rmd", output_format = "html_document")
-      shell: Rscript {0}
+      run: Rscript -e 'rmarkdown::render("test_report.Rmd", output_format = "html_document")'
+
+    - name: List rendered files
+      run: ls -lah
+
+    - name: Show diff
+      run: git status && git diff
     
     - name: Configure Git
       run: |
@@ -64,11 +68,5 @@ jobs:
         git remote set-url origin https://x-access-token:${env:PERSONAL_PAT}@github.com/${{ github.repository }}
         git add test_report.html test_report.Rmd
         git commit -m "update report" || echo "No changes to commit"
-        git pull --ff-only
-        git push origin || echo "No changes to commit"
-
-    - name: List rendered files
-      run: ls -lah
-
-    - name: Show diff
-      run: git status && git diff
+        git pull 
+        git push 
