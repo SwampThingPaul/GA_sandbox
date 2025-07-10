@@ -10,6 +10,9 @@ on:
 jobs:
   render:
     runs-on: windows-latest
+    
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
     - name: Checkout repository
@@ -66,16 +69,27 @@ jobs:
       shell: Rscript {0}
       run: |
         rmarkdown::render("test_report.Rmd")
-
-    - name: Commit rendered report
+    
+    - name: setup git config
       run: |
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        git add test_report.html
-        git commit -m "Rendered report" || echo "Nothing to commit"
-        git push
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # setup the username and email.
+        git config user.name "SwampThingPaul"
+        git config user.email "<>"
+      
+    - name: Commit results
+      run: |
+        git add -A 
+        git commit -m 'update report' || echo "No changes to commit"
+        git pull --ff-only
+        git push origin || echo "No changes to commit"
+
+#   - name: Commit rendered report
+#     run: |
+  #     git config --global user.name "github-actions[bot]"
+  #     git config --global user.email "github-actions[bot]@users.noreply.github.com"
+  #     git add test_report.html
+  #     git commit -m "Rendered report" || echo "Nothing to commit"
+  #     git push
         # RENV_PATHS_ROOT: ~/.cache/R/renv
 
 
