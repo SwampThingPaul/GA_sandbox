@@ -52,7 +52,7 @@ jobs:
     - name: Render R Markdown
       shell: Rscript {0}
       run: |
-        rmarkdown::render("test_report.Rmd")
+        rmarkdown::render("test_report.Rmd", output_format = "html_document")
     
     - name: Configure Git
       run: |
