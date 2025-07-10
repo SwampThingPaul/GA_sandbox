@@ -51,8 +51,8 @@ renv::status()
 # renv::install(package= 'sf', repos = c("https://cran.rstudio.com/"))
 
 # renv::purge("RCurl")
-# renv::install(package= 'RCurl', repos = c("https://cran.rstudio.com/"),prompt = F,pkgType = "binary",verbose = T )
+# renv::install(package= 'RCurl', repos = c("https://cran.rstudio.com/"),prompt = F,type = "binary",verbose = T )
 
 
 renv::clean()
-renv::rebuild()
+renv::rebuild(type="binary",recursive = TRUE)

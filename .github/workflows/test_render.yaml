@@ -4,8 +4,7 @@ on:
   push:
     branches: [master]
   workflow_dispatch:
-  schedule:
-    - cron: '* * * * *'
+  # schedule:
     # - cron: '15,30,45 * * * *'
     
 jobs:
@@ -24,6 +23,14 @@ jobs:
 
       - name: Set up R package cache
         uses: r-lib/actions/setup-renv@v2
+        
+      - name: Cache packages
+        uses: actions/cache@v1
+        with:
+          path: ${{ env.RENV_PATHS_ROOT }}
+          key: ${{ runner.os }}-renv-${{ hashFiles('**/renv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-renv-
 
       - name: Restore R packages with renv
         shell: Rscript {0}
@@ -44,6 +51,7 @@ jobs:
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RENV_PATHS_ROOT: ~/.cache/R/renv
 
 
 # 
