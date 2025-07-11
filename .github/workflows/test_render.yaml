@@ -46,7 +46,6 @@ jobs:
           dataRetrieval
           downloadthis
           rvest
-          sf
           SwampThingPaul/AnalystHelper
           SwampThingPaul/EVERSpatDat
           remotes
@@ -54,6 +53,7 @@ jobs:
     - name: Install terra and raster from rspatial
       shell: Rscript {0}
       run: |
+        install.packages('sf', type = "binary")
         install.packages('terra', repos = c('https://rspatial.r-universe.dev', 'https://cloud.r-project.org'))
         install.packages('raster', repos = c('https://rspatial.r-universe.dev', 'https://cloud.r-project.org'))
         
