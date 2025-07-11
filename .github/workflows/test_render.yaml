@@ -47,11 +47,16 @@ jobs:
           downloadthis
           rvest
           sf
-          rspatial/terra
-          rspatial/raster
           SwampThingPaul/AnalystHelper
           SwampThingPaul/EVERSpatDat
+          remotes
 
+    - name: Install terra and raster from rspatial
+      shell: Rscript {0}
+      run: |
+        install.packages('terra', repos = c('https://rspatial.r-universe.dev', 'https://cloud.r-project.org'))
+        install.packages('raster', repos = c('https://rspatial.r-universe.dev', 'https://cloud.r-project.org'))
+        
     - name: Render R Markdown
       run: Rscript -e 'rmarkdown::render("./test_report.Rmd", output_format = "html_document")'
       
