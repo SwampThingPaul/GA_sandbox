@@ -44,10 +44,11 @@ jobs:
           reshape2
           plyr
           dataRetrieval
-          sf
-          terra
           downloadthis
           rvest
+          sf
+          rspatial/terra
+          rspatial/raster
           SwampThingPaul/AnalystHelper
           SwampThingPaul/EVERSpatDat
 
