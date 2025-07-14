@@ -6,7 +6,10 @@ on:
   workflow_dispatch:
   # schedule:
     # - cron: '15,30,45 * * * *'
-    
+
+permissions:
+  contents: write
+
 jobs:
   render:
     runs-on: windows-latest
@@ -62,12 +65,14 @@ jobs:
 
     - name: Configure Git
       run: |
-        git config --global user.name "github-actions"
-        git config --global user.email "github-actions@github.com"
+          git config user.name "SwampThingPaul"
+          git config user.email "<>"
+#         git config --global user.name "github-actions"
+#         git config --global user.email "github-actions@github.com"
 
     - name: Commit and push rendered report
       run: |
-        git add -A 
+        git add test_report.Rmd test_report.html 
         git commit -m 'update report' || echo "No changes to commit"
         git pull --ff-only
         git push origin || echo "No changes to commit"
