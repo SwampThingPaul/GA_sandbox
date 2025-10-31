@@ -32,35 +32,20 @@ jobs:
         key: ${{ runner.os }}-r-${{ hashFiles('**/*.R', '**/*.Rmd') }}
         restore-keys: |
            ${{ runner.os }}-R-
-            
-    - name: Install packages
-      uses: r-lib/actions/setup-r-dependencies@v2
-      with:
-        pak-version: "devel"
-        packages: |
-          SwampThingPaul/AnalystHelper
-          SwampThingPaul/EVERSpatDat
-          remotes
-          rmarkdown
-          knitr
-          reshape2
-          plyr
-          zoo
-          lubridate
-          magrittr
-          RcppRoll
-          dataRetrieval
-          downloadthis
-          rvest
-          httr
-          mapmisc
-          future
-          future.apply
-          flextable
-          
-    - name: Install terra and raster from rspatial
+           
+    - name: Install R packages
       shell: Rscript {0}
       run: |
+        install.packages(c("remotes","reshape2","plyr","zoo","lubridate",
+        "RcppRoll","dataRetrieval","downloadthis","rvest","httr",
+        "mapmisc","future","future.apply","flextable"))
+    
+    
+    - name: Install terra and raster from rspatial and others
+      shell: Rscript {0}
+      run: |
+        remotes::install_github("SwampThingPaul/AnalystHelper")
+        remotes::install_github("SwampThingPaul/EVERSpatDat")
         install.packages('sf', type = "binary")
         install.packages('terra', repos = c('https://rspatial.r-universe.dev', 'https://cloud.r-project.org'))
         install.packages('raster', repos = c('https://rspatial.r-universe.dev', 'https://cloud.r-project.org'))
