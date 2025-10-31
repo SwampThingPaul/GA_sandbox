@@ -1,9 +1,9 @@
 name: Render R Markdown (Windows) - test
 
-on:
-  push:
-    branches: [master]
-  workflow_dispatch:
+on: [workflow_dispatch] # only runs manually via the GitHub Actions UI (when you click “Run workflow”)
+#   push:
+#     branches: [master]
+#   workflow_dispatch:
   # schedule:
     # - cron: '15,30,45 * * * *'
 

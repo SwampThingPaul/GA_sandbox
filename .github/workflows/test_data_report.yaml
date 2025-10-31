@@ -4,7 +4,10 @@ on:
   push:
     branches: [master]
   workflow_dispatch:
-  
+
+permissions:
+  contents: write
+
 jobs:
   render:
     name: Install Rpackages and render report
@@ -64,5 +67,5 @@ jobs:
       run: |
         git add -A 
         git commit -m 'update report' || echo "No changes to commit"
-        git pull --ff-only
+        git pull --rebase origin master
         git push origin || echo "No changes to commit"
