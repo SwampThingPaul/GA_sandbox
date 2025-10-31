@@ -1,0 +1,413 @@
+---
+title: "Report test"
+output: 
+  html_document: 
+    toc: yes
+    self_contained: true
+    dev: png
+    type: cairo
+editor_options: 
+  chunk_output_type: console
+  markdown: 
+    wrap: 72
+---
+```{r date,echo=FALSE,message=FALSE,warning=FALSE}
+up.date <- format(Sys.time(),tz="America/New_York",usetz=T,"%F %R")
+up.date <- as.POSIXct(up.date,tz="America/New_York")
+
+daylight_saving <- function(x){
+  # from lubridate::dst()
+  # https://github.com/tidyverse/lubridate/blob/c073b81fac869d9ed4771bfa4784e1b1aae12d1a/R/accessors-dst.r
+  c(NA, FALSE, TRUE)[as.POSIXlt(x)$isdst + 2]
+}
+
+dst.check <- daylight_saving(as.POSIXct(up.date))
+
+```
+
+`r paste("Updated:",up.date, ifelse(dst.check==T,"EDT","EST"))`
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE,
+                      message=FALSE,
+                      warning=FALSE,
+                      fig.path="plots/",
+                      dev.args = list(png = list(type = "cairo")))
+
+## Turn on/off LOK recovery envelope shading
+RecEnv.plot  <-  1
+rec.ops <-  0
+
+lake.rec.start <- AnalystHelper::date.fun("2024-12-07")
+lake.rec.end <- AnalystHelper::date.fun("2025-07-01")
+
+## Libraries
+library(AnalystHelper)
+library(reshape2)
+library(plyr)
+library(zoo)
+library(lubridate)
+library(flextable)
+library(magrittr)
+library(RcppRoll)
+library(dataRetrieval)
+library(downloadthis)
+
+library(future.apply)
+
+library(sf)
+# library(raster)
+library(terra)
+library(EVERSpatDat)
+
+library(rvest)
+
+library(ggplot2)
+theme_set(theme_minimal(base_size = 16)+#,base_family = "serif")+
+            theme_bw()+
+            theme(panel.border = element_rect("black",fill=NA,linewidth=1)))
+
+# CRS
+nad83.pro <- st_crs("EPSG:4269")
+nad83Harn_east <- st_crs("EPSG:2881")
+utm17 <- st_crs("EPSG:26917")
+wgs84 <- st_crs("EPSG:4326")
+# tmap_mode("view")
+
+```
+
+```{r dates, include = FALSE}
+CurWY <- WY(date.fun(Sys.time()))
+CurWY.Fed <- WY(date.fun(Sys.time()),"Fed")
+
+Start.Date <- date.fun(paste(CurWY-4,05,01,sep="-"))
+End.Date <- date.fun(Sys.Date()-1)
+
+YEST <- End.Date# date.fun(End.Date-ddays(1))
+dates <- c(Start.Date,End.Date)
+flab.dates <- c(date.fun(paste(CurWY-15,05,01,sep="-")),End.Date)
+```
+
+```{r spatial,include = FALSE}
+
+data("sfwmd_bound")
+data("sloughs")
+data("FLAB")
+
+slough_cut <- st_intersection(st_buffer(sfwmd_bound,-500),sloughs)
+
+```
+
+```{r LOK shape}
+plot(st_geometry(LOK))
+```
+
+
+```{r Stage data,include = FALSE}
+# STAGE -------------------------------------------------------------------
+LOK.sdate <- date.fun("2007-05-01")
+other.sdate <- date.fun(paste((CurWY-3)-1,"05-01",sep="-"))
+
+stg_dbkeys_list <- list()
+stg_dbkeys_list[["LOK"]] <- data.frame(loc = c("LOK"),DA = c("06832","N3466"),BK=NA,Priority=c("P2","P1"))
+stg_dbkeys_list[["EAA"]] <- data.frame(loc = c("S2_H","S3_H","S352","L8.441"),DA = c("06562","65448","40536","02854"),BK=NA,Priority=NA)
+stg_dbkeys_list[["WCA1"]] <- data.frame(loc = c("CA1-8T","CA1-9","CA1-7"),DA = c("15809","15811","15808"),BK=NA,Priority=NA)
+stg_dbkeys_list[["WCA2"]] <- data.frame(loc = c("S11B_H","CA217"),DA = c("WN126","16531"),BK=NA,Priority=NA)
+stg_dbkeys_list[["WCA3"]] <- data.frame(loc = c("CA3-62","CA3-63","CA3-64","CA3-65"),DA = c("16536","16532","16537","16538"),BK=NA,Priority=NA)
+stg_dbkeys_list[["ENP"]] <- data.frame(loc = c("NESRS2","NP201","S334_HW", "S333N_TW", "S333_TW"),
+                                       DA = c("01218","06719","DJ184", "40367", "AJ015"),
+                                       BK = c(rep("NA",2),"IY636", "40368", "AJ016"),
+                                       Priority=NA)
+## added priority column for DA DBKEYS ... does not work across DA and BK
+stg_dbkeys_list[["EAA"]][stg_dbkeys_list[["EAA"]]$loc=="S3_H","DA"] <- "06633"
+stg_dbkeys_list[["EAA"]][stg_dbkeys_list[["EAA"]]$loc=="S352","DA"] <- "FF580"
+
+stg_dbkeys <- do.call(rbind.data.frame, c(stg_dbkeys_list, make.row.names = FALSE))
+
+L29_stg_loc_str <- data.frame(loc = c("S334_HW", "S333N_TW", "S333_TW"),str = c("S334","S333","S333"))
+eaa.stg.canal <- data.frame(loc = c("S2_H","S3_H","S352","L8.441"),canal = c("Hills/NNR","Miami","WPB","L8"))
+
+
+stg_dbkeys_list <- subset(stg_dbkeys,loc=="LOK")
+
+  stg_dat_list <- future_lapply(seq_along(stg_dbkeys$DA), function(i) {
+    # Attempt to retrieve data and handle errors
+    tryCatch({
+      dbkey <- stg_dbkeys$DA[i]
+      sdate <- if(subset(stg_dbkeys,DA==dbkey)$loc=="LOK"){LOK.sdate}else{other.sdate}
+      edate <- dates[2]
+      
+      tmp <- insight_fetch_daily(sdate,edate, dbkey,datum="NGVD29")
+      tmp$DBKEY <- as.character(dbkey)
+      #setTxtProgressBar(pb, i)
+      tmp
+    }, error = function(e) {
+      # message(sprintf("Skipping DBKEY %s due to error: %s", dbkey, e$message))
+      NULL  # Return NULL if there's an error
+    })
+  }, future.seed = TRUE)
+  
+  stg_dat_list <- Filter(Negate(is.null), stg_dat_list)
+  stg_dat <- do.call(rbind, stg_dat_list)|>
+    merge(stg_dbkeys[,c("loc","DA","Priority")],by.x='DBKEY',by.y="DA",all.x=T)
+  
+```
+
+```{r constants}
+lok_stage_yrs <- c(CurWY-3,CurWY-2, CurWY-1, CurWY)
+lok_stage_cols <- c(adjustcolor(c("purple","forestgreen","blue"), 0.5), "red")
+
+stage_yrs <- c(CurWY-2, CurWY-1, CurWY)
+stage_cols <- c(adjustcolor(c("forestgreen","blue"), 0.5), "red")
+
+Q_cols <- c("dodgerblue1","indianred1","forestgreen")
+```
+
+## Lake Okeechobee
+
+```{r LORSplot,echo=FALSE,results='hide',fig.width=7,fig.height=5,fig.align='center',fig.cap=paste0("Lake Okeechobee daily average stage elevation for water year ",CurWY," (WY", CurWY,") relative to the last three water years relative to the Lake Okeechobee Regulation Schedule (LORS).")}
+
+lok.stg <- subset(stg_dat,loc=="LOK")|>
+  dcast(Date~Priority,value.var="Data.Value",mean)|>
+  mutate(
+         WY = WY(Date),
+         DOWY = hydro.day(Date),
+         DoY = as.numeric(format(Date,"%j")),
+         CY = as.numeric(format(Date,"%Y")))
+lok.stg$Mean <- apply(lok.stg[,c("P1","P2")], 1, function(x) x[!is.na(x)][1])
+
+lok.stg$Mean[lok.stg$Mean==0]=NA
+lok.stg$recess_7day <- with(lok.stg,c(rep(NA,7),diff(Mean,lag=7)))
+lok.stg$recess_30day <- with(lok.stg,c(rep(NA,30),diff(Mean,lag=30)))
+
+lok.stg$inter.stage <- dat.interp(lok.stg$Mean)
+stg.cat <- c(-Inf,9,10,12,13,15,16,17,Inf)
+lok.stg$stg.cat <- as.factor(findInterval(lok.stg$inter.stage,stg.cat))
+
+if(rec.ops ==  1){
+  LOK.rec.stg <- subset(lok.stg,Date>=lake.rec.start)
+  LOK.rec.stg$LT12.cnt <- as.numeric(LOK.rec.stg$Mean<12) 
+  LOK.rec.stg$cum.LT12.cnt <- cumsum(LOK.rec.stg$LT12.cnt)
+  LOK.rec.stg$LT115.cnt <- as.numeric(LOK.rec.stg$Mean<11.5) 
+  LOK.rec.stg$cum.LT115.cnt <- cumsum(LOK.rec.stg$LT115.cnt)
+}
+
+vals <- c(-3, -2, -1, 0, 1)
+sch_fill <- data.frame(Date=seq(date.fun(paste(CurWY+min(vals),"01-01",sep="-")),date.fun(paste(CurWY+max(vals),"04-30",sep="-")),"1 days"))
+
+LORS08.sch.bk <- data.frame(
+  day = c(1, 2, 2, 16, 2, 1, 2, 2, 16, 2, 1, 1, 1, 16, 2, 1, 1, 1, 16, 2, 1, 
+          16, 16, 1, 16, 1, 1, 1, 16, 1, 16, 1, 16, 1, 2, 1, 1, 16, 1, 16, 1,
+          16, 1, 2, 1, 1, 2, 2, 1, 1, 1, 1, 2, 1, 2, 1, 1), 
+  month = c(1, 4, 6, 9, 11, 1, 4, 6, 9, 11, 1, 4, 6, 9, 11, 1, 4, 6, 9, 11, 
+            1, 2, 4, 6, 9, 10, 12, 1, 2, 4, 4, 6, 9, 10, 11, 12, 1, 2, 4, 4,
+            6, 9, 10, 11, 12, 1, 9, 10, 1, 4, 5, 6, 6, 10, 10, 11, 12),
+  variable = c("ZONE.B", "ZONE.B", "ZONE.B", "ZONE.B", "ZONE.B", "ZONE.C", 
+               "ZONE.C", "ZONE.C", "ZONE.C", "ZONE.C", "ZONE.C1", "ZONE.C1",
+               "ZONE.C1", "ZONE.C1", "ZONE.C1", "ZONE.D", "ZONE.D", "ZONE.D", 
+               "ZONE.D", "ZONE.D", "ZONE.D0", "ZONE.D0", "ZONE.D0", "ZONE.D0",
+               "ZONE.D0", "ZONE.D0", "ZONE.D0", "ZONE.D1", "ZONE.D1", 
+               "ZONE.D1", "ZONE.D1", "ZONE.D1", "ZONE.D1", "ZONE.D1",
+               "ZONE.D1", "ZONE.D1", "ZONE.D2", "ZONE.D2", "ZONE.D2", 
+               "ZONE.D2", "ZONE.D2", "ZONE.D2", "ZONE.D2", "ZONE.D2",
+               "ZONE.D2", "ZONE.E", "ZONE.E", "ZONE.E", "ZONE.SSM",
+               "ZONE.SSM", "ZONE.SSM", "ZONE.SSM", "ZONE.SSM", "ZONE.SSM",
+               "ZONE.SSM", "ZONE.SSM", "ZONE.SSM"), 
+  value = c(17.25, 17.25, 16, 16.5, 17.25, 16.88, 16.5, 15.5, 16.13, 16.88, 
+            15.25, 14.5, 14, 14.75, 15.25, 16.25, 15.5, 15, 15.75, 16.25, 14,
+            13.5, 13.5, 13, 14, 14.5, 14.5, 14.75, 14.29, 14.17, 14.13, 13.67,
+            14.58, 14.97, 15.08, 15.08, 15.5, 15.08, 14.83, 14.75, 14.33, 
+            15.17, 15.44, 15.67, 15.67, 12.6, 12.6, 13, 12.16, 11.7, 10.95, 
+            10.5, 10.5, 13, 13, 12.8, 12.4))  
+LOSOM.sch.bk <- data.frame(
+  day = c(1, 2, 2, 2, 1, 2, 2, 1, 2, 2, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1,
+          1, 2, 22, 2, 2, 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1, 2, 1, 2, 1, 1), 
+  month = c(1, 4, 6, 11, 1, 6, 11, 1, 6, 11, 1, 4, 5, 6, 6, 10, 10, 11, 12,
+            1, 4, 5, 6, 6, 8, 10, 11, 1, 4, 5, 6, 6, 10, 11, 1, 4, 5, 6, 6,
+            10, 10, 11, 12), 
+  variable = c("ZONE.A", "ZONE.A", "ZONE.A", "ZONE.A", "ZONE.BC", "ZONE.BC", 
+               "ZONE.BC",  "ZONE.BXX", "ZONE.BXX", "ZONE.BXX", "ZONE.D",
+               "ZONE.D", "ZONE.D",  "ZONE.D", "ZONE.D", "ZONE.D", "ZONE.D",
+               "ZONE.D", "ZONE.D", "ZONE.D1",  "ZONE.D1", "ZONE.D1", "ZONE.D1", 
+               "ZONE.D1", "ZONE.D1", "ZONE.D1", "ZONE.D1", "ZONE.D2", 
+               "ZONE.D2", "ZONE.D2", "ZONE.D2", "ZONE.D2", "ZONE.D2",
+               "ZONE.D2", "ZONE.D3", "ZONE.D3", "ZONE.D3", "ZONE.D3",
+               "ZONE.D3", "ZONE.D3", "ZONE.D3", "ZONE.D3", "ZONE.D3"), 
+  value = c(17.25, 17.25, 16.5, 17.25, 16.85, 16.1, 16.85, 16.85, 16.1, 16.85,
+            12.16,  11.7, 10.95, 10.5, 10.5, 13, 13, 12.8, 12.4, 14.49, 13.94,
+            13.04, 12.5, 14.5, 14.5, 15.5, 15.5, 13.66, 13.2, 12.45, 12, 14.5,
+            14.5, 15, 12.16, 11.7, 10.95, 10.5, 10.5, 13, 13, 12.8, 12.4)
+)
+
+lok.rec.env <- rbind(
+  data.frame(
+    month = c(1,1, 3, 4, 5, 7, 8, 8, 9, 10, 11,12),
+    day = c(1,15, 15, 15, 15, 1, 1, 15, 15, 15, 15,31),
+    variable = "lower",
+    value = c(13.5,13.5,12.5, 11.5, 11, 11, 11.5,11.5, 12, 13, 14,14)
+  ),
+  data.frame(
+    month = c(1,1, 3, 4, 5, 6, 8, 9, 9, 10,12),
+    day = c(1,15, 15, 1, 1, 15, 15, 1, 15, 15,31),
+    variable = "upper",
+    value = c(14.5,14.5, 13.5, 13.5, 13, 12, 13, 13.5, 14.5, 15,15)
+  )
+)
+
+##
+vals <- c(-3, -2, -1, 0, 1)
+## LORS08
+# no longer in effect
+
+## LOSOM
+n_row_vals <- nrow(LOSOM.sch.bk)
+tot_row <- n_row_vals*length(vals)
+date_mat <- matrix(NA,nrow=tot_row,ncol=1) 
+
+for (i in seq_along(vals)) {
+  start_idx <- (i - 1) * n_row_vals + 1
+  end_idx <- i * n_row_vals
+  date_mat[start_idx:end_idx, 1] <- date.fun(
+    paste(CurWY + vals[i], LOSOM.sch.bk$month, LOSOM.sch.bk$day, sep = "-")
+  )
+}
+date_mat <- data.frame(Date = date.fun(as.POSIXct(date_mat,origin = "1970-01-01")))
+
+LOSOM.sch.bk <- cbind(LOSOM.sch.bk,date_mat)|>
+  dcast(Date~variable,value.var = "value",mean)|>
+  merge(sch_fill,"Date",all.y=T)
+
+LOSOM.sch.bk[-1] <- lapply(LOSOM.sch.bk[-1],dat.interp);
+
+## Recovery Envelope
+n_row_vals <- nrow(lok.rec.env)
+tot_row <- n_row_vals*length(vals)
+date_mat <- matrix(NA,nrow=tot_row,ncol=1) # data.frame(Date = rep(NA,tot_row))
+CurWY <- WY(Sys.Date())
+for (i in seq_along(vals)) {
+  start_idx <- (i - 1) * n_row_vals + 1
+  end_idx <- i * n_row_vals
+  date_mat[start_idx:end_idx, 1] <- date.fun(
+    paste(CurWY + vals[i], lok.rec.env$month, lok.rec.env$day, sep = "-")
+  )
+}
+date_mat <- data.frame(Date = date.fun(as.POSIXct(date_mat,origin = "1970-01-01")))
+
+lok.rec.env.bk <- cbind(lok.rec.env,date_mat)|>
+  dcast(Date~variable,value.var = "value",mean)|>
+  merge(sch_fill,"Date",all.y=T)
+lok.rec.env.bk[-1] <- lapply(lok.rec.env.bk[-1],dat.interp);
+lok.rec.env.bk$DOWY <- hydro.day(lok.rec.env.bk$Date)
+lok.rec.env.bk$WY <- WY(lok.rec.env.bk$Date)
+
+LOSOM.sch.bk <- LOSOM.sch.bk|>
+  mutate(DOWY = hydro.day(Date),
+         WY = WY(Date))|>
+  subset(Date>=date.fun("2024-08-12"))
+
+### Plot
+lwd.val <- 1
+xlim.vals <- date.fun(c(paste(CurWY-1,05,01,sep="-"),paste(CurWY,04,30,sep="-")))
+xmaj <- seq(xlim.vals[1],xlim.vals[2],by="2 months");xmin <- seq(xlim.vals[1],xlim.vals[2],by="1 months")
+xlim.vals2 <- hydro.day(xlim.vals)
+
+ylim.val <- c(9,18);by.y <- 1
+ymaj <- seq(ylim.val[1],ylim.val[2],by.y);ymin <- seq(ylim.val[1],ylim.val[2],by.y/2)
+
+par(mar=c(0.5,1.5,1,1.5),oma=c(0.5,3,1,3));
+layout(matrix(1:2,2,1,byrow=T),heights=c(1,0.25))
+
+plot(ZONE.BC~DOWY,LOSOM.sch.bk,ylim=ylim.val,xlim=xlim.vals2,type="n",ann=F,axes=F,yaxs="i",xaxs="i")
+abline(h=seq(9,18,1),v=hydro.day(xmin),lwd=1,col="grey",lty=3)
+if(RecEnv.plot==1){with(subset(lok.rec.env.bk,WY==CurWY),shaded.range(DOWY,lower,upper,"grey90",col.adj=1,lty=1))}
+
+with(subset(LOSOM.sch.bk,WY==CurWY),lines(ZONE.A~DOWY,lwd=2,col="black"))
+with(subset(LOSOM.sch.bk,WY==CurWY),lines(ZONE.BC~DOWY,lwd=2,col="black"))
+with(subset(LOSOM.sch.bk,WY==CurWY),lines(ZONE.D~DOWY,lwd=2,col="grey"))
+text(246,17.5,"Zone A",font=2)
+text(290,16.8,"Zone BC",font=2,pos = 4)
+text(277,14.3,"Zone D",font=2,pos = 4)
+for(i in seq_along(lok_stage_yrs)){
+lines(Mean ~ DOWY,subset(lok.stg, WY == lok_stage_yrs[i]),lwd = 3, col = lok_stage_cols[i], lty = 1)
+}
+lab.loc <- subset(LOSOM.sch.bk,Date == YEST)$ZONE.D-0.8
+yest_dat <- subset(lok.stg, Date == YEST)
+
+if (nrow(yest_dat) > 0 && !is.na(yest_dat$Mean)) {
+  points(Mean ~ DOWY, yest_dat,pch = 21, bg = adjustcolor("grey", 0.5), col = "gray", lwd = 0.1, cex = 1.25)
+  # Extract values once
+  DOWY_val <- yest_dat$DOWY
+  Mean_val <- yest_dat$Mean
+  if (DOWY_val > 300) {
+    segments(DOWY_val, Mean_val, DOWY_val - 30, lab.loc, lty = 2)
+    text(DOWY_val - 30, lab.loc,
+         paste(format(round(Mean_val, 2), nsmall = 2), "Ft\nNGVD29"),
+         cex = 0.8, xpd = NA, pos = 1, offset = -0.1)
+  } else if (DOWY_val < 30) {
+    segments(DOWY_val, Mean_val, DOWY_val + 30, lab.loc, lty = 2)
+    text(DOWY_val + 30, lab.loc + 0.1,
+         paste(format(round(Mean_val, 2), nsmall = 2), "Ft\nNGVD29"),
+         cex = 0.8, xpd = NA, pos = 1, offset = 0.1)
+  } else {
+    segments(DOWY_val, Mean_val, DOWY_val, lab.loc, lty = 2)
+    text(DOWY_val, lab.loc + 0.1,
+         paste(format(round(Mean_val, 2), nsmall = 2), "Ft\nNGVD29"),
+         cex = 0.8, xpd = NA, pos = 1, offset = 0.1)
+  }
+}
+axis_fun(1,hydro.day(xmaj),hydro.day(xmin),format(xmaj,"%b"),line=-0.5)
+axis_fun(2,ymaj,ymin,ymaj)
+box(lwd=1)
+mtext(side=1,"Month",line=2,cex=1.25)
+mtext(side=2,"Stage Elevation (Feet, NGVD29)",line=2.5,cex=1.25)
+mtext(side=3,adj=0,paste("Date:",format(date.fun(Sys.Date()-ddays(1)),"%b %d, %Y")))
+mtext(side=3,adj=1,"Data are provisional and subject to change",col="red")
+
+ylim.val2=c(8,16);by.y2=1
+ymaj2=seq(ylim.val2[1],ylim.val2[2],by.y2);ymin2=seq(ylim.val2[1],ylim.val2[2],by.y2/2)
+lok.con=1.25
+axis_fun(4,ymaj2+lok.con,ymin2+lok.con,ymaj2)
+mtext(side=4,"Stage Elevation (Feet, NAVD88)",line=2.5,cex=1.25)
+
+plot(0:1,0:1,type = 'n', axes = F,xlab=NA, ylab=NA)
+legend(0.5,0.5,
+       legend=c(paste0("WY",rev(lok_stage_yrs))),
+       col=rev(lok_stage_cols),lty=c(1,1),lwd=c(4,4,4),ncol=2,cex=1,bty="n",y.intersp=1,x.intersp=0.5,xpd=NA,xjust=0.5)
+
+
+```
+
+</font> <font size=3 color="red">
+
+<center>Data are provisional and subject to change.</center>
+
+</font>
+
+```{r}
+CurWY <- WY(Sys.Date())
+WYs <- c(CurWY+c(0,-1:-3)) 
+cap.val <- "Stage and recession rates this day for the current and last three water years"
+
+subset(lok.stg,DOWY==hydro.day(YEST)&WY%in%WYs)|>
+  flextable(col_keys=c("Date","WY","Mean","recess_7day","recess_30day"))|>
+  flextable::width(width=c(1,1,1.25,1.5,1.5))|>
+  flextable::align(align="center",part="all")|>
+  colformat_datetime(j=1,fmt_date="%m-%d")|>
+  colformat_double(j=2,big.mark="",digits=0)|>
+  colformat_num(j=3:5,na_str="- NR -")|>
+  padding(padding=1,part="all")|>
+  # font(fontname="Times New Roman",part="all")|>
+  fontsize(size=12,part="body")|>
+  fontsize(size=13,part="header")|>
+  bold(part="header")|>
+  set_header_labels("Date"="Date\n(Month-Day)",
+                    "WY"="Water Year",
+                    "Mean"="Stage\n(ft, NGVD29)",
+                    "recess_7day"="7-Day Recession Rate\n(ft 7-d\u207B\u00B9)",
+                    "recess_30day"="30-Day Recession Rate\n(ft 30-d\u207B\u00B9)")|>
+  bg(i=~WY==CurWY,part="body",bg="wheat")|>
+  add_header_lines(values=cap.val)|>flextable::align(align="center",part="header")|>fontsize(size=13,part="header")
+
+```
+
+<br>
