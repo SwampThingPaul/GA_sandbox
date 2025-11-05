@@ -411,3 +411,29 @@ subset(lok.stg,DOWY==hydro.day(YEST)&WY%in%WYs)|>
 ```
 
 <br>
+
+```{r LOK stage calendar,echo=FALSE,fig.width=6,fig.height=5,fig.align='center',fig.cap="Lake Okeechobee stage calendar plot from 2008 to current." }
+xlabs <- seq(date.fun("2025-05-01"),date.fun("2026-04-30"),"1 months")
+xlabs.nums <- hydro.day(xlabs)
+xlabs.labs <- format(xlabs,"%b")
+
+cols <- viridis::turbo(length(stg.cat)-1,direction = -1)
+ggplot(lok.stg, aes(x = DOWY, y = WY, fill = stg.cat)) +
+  geom_tile(aes(group = stg.cat), colour = NA)+
+  scale_y_reverse(expand = c(0, 0), breaks = unique(lok.stg$WY)) +
+  scale_x_continuous(expand = c(0, 0),
+                     limits = c(1,365),
+                     breaks = xlabs.nums,
+                     labels = xlabs.labs)+
+  scale_fill_manual(values = cols,
+                    name="Lake Stage Category\n(Ft, NGVD29)",
+                    breaks=seq(1,length(stg.cat)-1,1),
+                    labels=c("< 9","9 - 10", "10 - 12", "12 - 13","13 - 15", "15 - 16","16 - 17", "> 17")) +
+  # theme_bw(base_family = "serif") +
+  labs(title = "Lake Okeechobee",
+       subtitle = "Stage Elevation",
+       caption = paste0("Produced: ",format(Sys.Date(),"%d %b %Y")),
+       x="Day of Water Year",
+       y="Water Year")
+
+```

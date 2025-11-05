@@ -18,7 +18,7 @@ jobs:
       
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v3
 
     - name: Set up R
       uses: r-lib/actions/setup-r@v2
@@ -39,9 +39,9 @@ jobs:
     - name: Install R packages
       shell: Rscript {0}
       run: |
-        install.packages(c("remotes","reshape2","plyr","zoo","lubridate",
+        install.packages(c("remotes","reshape2","plyr","zoo",
         "RcppRoll","dataRetrieval","downloadthis","rvest","httr",
-        "mapmisc","future","future.apply","flextable"))
+        "mapmisc","future","future.apply","flextable","ggplot2"))
     
     
     - name: Install terra and raster from rspatial and others
